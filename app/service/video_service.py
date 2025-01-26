@@ -101,3 +101,50 @@ class VideoService:
             raise VideoProcessingException(f"Database error: {str(e)}")
 
         return {"message": "Video trimmed successfully", "video_id": trimmed_video.id}
+
+    def merge_videos(self, video_ids):
+        """Merge multiple videos into one"""
+
+        video_validator = VideoValidator(None)
+        validation_err = video_validator.validate_video_ids(video_ids)
+        if validation_err:
+            self.logger.error("Validation error : {}".format(validation_err))
+            raise VideoValidationException(validation_err)
+
+        if len(video_ids) == 1:
+            self.logger.error("At least 2 videos are required to merge")
+            raise VideoValidationException("At least 2 videos are required to merge")
+
+        self.logger.error("Merging videos for Ids : {}".format(str(video_ids)))
+
+        # Retrieve the video records from the database
+        videos = Video.query.filter(Video.id.in_(video_ids)).all()
+
+        if len(video_ids) != len(videos):
+            found_video_ids = [each_video.id for each_video in videos]
+            # Remove the found ids from video_ids
+            not_found_ids = [video_id for video_id in video_ids if video_id not in found_video_ids]
+            self.logger.error("Video not found Ids : {}".format(str(not_found_ids)))
+            raise VideoNotFoundException("Video not found Ids : {}".format(str(not_found_ids)))
+
+        # Perform the video merging process
+        try:
+            self.logger.info("processing videos for merging : {}".format(video_ids))
+            video_processor = VideoProcessor()
+            merged_video = video_processor.merge_video_files(videos)
+        except Exception as e:
+            self.logger.error("Processing error while merging : {}".format(str(e)))
+            raise VideoProcessingException(str(e))
+
+        # Save the merged video to the database
+        try:
+            # Add the video record to the database
+            self.logger.info("saving trimmed video for file : {}".format(merged_video.filename))
+            db.session.add(merged_video)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()  # Rollback the transaction to maintain data integrity
+            self.logger.error("Database error : {}".format(str(e)))
+            raise VideoProcessingException(f"Database error: {str(e)}")
+
+        return {"message": "Videos merged successfully", "video_id": merged_video.id}

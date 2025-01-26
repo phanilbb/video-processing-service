@@ -38,3 +38,13 @@ class VideoValidator:
             return duration_error
 
         return None
+
+    def validate_video_ids(self, video_ids):
+        """Ensure video_ids is a list of integers."""
+        if not isinstance(video_ids, list):
+            return "video_ids must be a list."
+
+        if not all(isinstance(id, int) for id in video_ids):
+            return "All items in video_ids must be integers."
+
+        return None

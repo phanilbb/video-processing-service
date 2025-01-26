@@ -56,3 +56,21 @@ class VideoProcessor:
             file_path=new_file_path
         )
         return trimmed_video
+
+    def merge_video_files(self, videos):
+        """Merge multiple video files into a single file."""
+        clips = [VideoFileClip(video.file_path) for video in videos]
+        final_clip = concatenate_videoclips(clips)
+        file_extension = os.path.splitext(videos[0].file_path)[1]
+        unique_filename = f"{uuid.uuid4()}{file_extension}"  # Generate UUID-based filename
+        merged_file_path = os.path.join(self.video_dir, unique_filename)
+        final_clip.write_videofile(merged_file_path)
+
+        # Create a Video object for the merged video
+        merged_video = Video(
+            filename=unique_filename,
+            size=os.path.getsize(merged_file_path),
+            duration=final_clip.duration,
+            file_path=merged_file_path
+        )
+        return merged_video
