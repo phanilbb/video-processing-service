@@ -98,6 +98,14 @@ Request Body
 | `form-data`   | `file` | **Required video file** |
 
 
+### Curl
+```commandline
+curl --location 'http://localhost:8000/video' \
+--header 'Content-Type: multipart/form-data' \
+--header 'Authorization: ••••••' \
+--form 'file=@"190002-887067381_medium.mp4"'
+```
+
 ### Response:
 
 #### 201 Created: 
@@ -127,6 +135,12 @@ Request Body
 
 ```http
   GET /video/${id}
+```
+
+### Curl
+```commandline
+curl --location 'http://localhost:8000/video/8' \
+--header 'Authorization: ••••••'
 ```
 
 Headers
@@ -183,6 +197,17 @@ Request Body
 | `end`     | `int` | **Required** video end   |
 
 
+### Curl
+```commandline
+curl --location 'http://localhost:8000/video/1/trim' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: ••••••' \
+--data '{
+    "start": 2,
+    "end": 8
+}'
+```
+
 ### Response:
 
 #### 200 Response: 
@@ -228,6 +253,20 @@ Request Body
 | `video_ids` | `List<int>` | **Required** video ids |
 
 
+
+### Curl
+```commandline
+curl --location 'http://localhost:8000/videos/merge' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: ••••••' \
+--data '{
+    "video_ids": [
+        2,
+        6
+    ]
+}'
+```
+
 ### Response:
 
 #### 200 Response: 
@@ -264,6 +303,13 @@ Headers
 | Parameter       | Type     | Description                |
 |:----------------| :------- |:---------------------------|
 | `Authorization` | `string` | **Required**. Bearer Token |
+
+
+### Curl
+```commandline
+curl --location --request POST 'http://localhost:8000/video/7/share' \
+--header 'Authorization: ••••••'
+```
 
 ### Response:
 
