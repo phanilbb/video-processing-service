@@ -99,7 +99,7 @@ Request Body
 
 
 ### Curl
-```commandline
+```
 curl --location 'http://localhost:8000/video' \
 --header 'Content-Type: multipart/form-data' \
 --header 'Authorization: ••••••' \
@@ -138,7 +138,7 @@ curl --location 'http://localhost:8000/video' \
 ```
 
 ### Curl
-```commandline
+```
 curl --location 'http://localhost:8000/video/8' \
 --header 'Authorization: ••••••'
 ```
@@ -198,7 +198,7 @@ Request Body
 
 
 ### Curl
-```commandline
+```
 curl --location 'http://localhost:8000/video/1/trim' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: ••••••' \
@@ -255,7 +255,7 @@ Request Body
 
 
 ### Curl
-```commandline
+```
 curl --location 'http://localhost:8000/videos/merge' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: ••••••' \
@@ -306,7 +306,7 @@ Headers
 
 
 ### Curl
-```commandline
+```
 curl --location --request POST 'http://localhost:8000/video/7/share' \
 --header 'Authorization: ••••••'
 ```
