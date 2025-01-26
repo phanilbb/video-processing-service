@@ -1,11 +1,14 @@
 import logging
 import os
-
+from app.constants import SHARE_DURATION
 from app.exceptions.video_exceptions import VideoValidationException, VideoProcessingException, VideoNotFoundException
 from app.extension import db
 from app.service.processor.video_processor import VideoProcessor
 from app.service.validator.video_validator import VideoValidator
-from app.videos.models import Video
+from app.videos.models import Video, VideoShare
+import hashlib
+from datetime import datetime, timedelta
+from flask import url_for
 
 
 class VideoService:
@@ -148,3 +151,51 @@ class VideoService:
             raise VideoProcessingException(f"Database error: {str(e)}")
 
         return {"message": "Videos merged successfully", "video_id": merged_video.id}
+
+    def generate_shareable_link(self, video_id, expiry_duration=SHARE_DURATION):
+        """Generate a time-expiring shareable link for a video."""
+        # Get the current time and calculate expiry
+
+        self.get_video(video_id)
+        current_time = datetime.utcnow()
+        expiry_time = current_time + timedelta(hours=expiry_duration)
+
+        # Create a unique token (could be a hash of video_id and timestamp)
+        token = hashlib.sha256(f"{video_id}-{current_time.timestamp()}".encode()).hexdigest()
+
+        # Save this information to your database, e.g. VideoShare model
+        try:
+            # Add the video record to the database
+            self.logger.info("saving sharable video for video : {} with token {}".format(video_id, token))
+            video_share = VideoShare(video_id=video_id, token=token, expiry_time=expiry_time)
+            db.session.add(video_share)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()  # Rollback the transaction to maintain data integrity
+            self.logger.error("Database error : {}".format(str(e)))
+            raise VideoProcessingException(f"Database error: {str(e)}")
+
+        # Create the shareable URL
+        share_url = url_for('video_routes.get_video_from_shared_token',  token=token, _external=True)
+        return {"share_url": share_url, "expiry_time": expiry_time}
+
+    def get_shared_video_from_token(self, token):
+        """Handle access to shareable video links."""
+        # Retrieve the VideoShare object from the database
+        video_share = VideoShare.query.filter_by(token=token).first()
+        if not video_share:
+            raise VideoNotFoundException("No shared video found with token {}".format(token))
+
+        # Check if the link has expired
+        if video_share.expiry_time < datetime.utcnow():
+            raise VideoValidationException("The shared url has expired")
+
+        # Return the video details if the link is valid
+        video = Video.query.get(video_share.video_id)
+        return {
+            "id": video.id,
+            "filename": video.filename,
+            "size": video.size,
+            "duration": video.duration,
+            "file_path": video.file_path
+        }

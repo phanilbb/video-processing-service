@@ -81,3 +81,34 @@ def merge():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@video_routes.route('/video/<int:video_id>/share', methods=['POST'])
+@authenticate
+def get_share_link(video_id):
+    try:
+        video_service = VideoService()
+        response = video_service.generate_shareable_link(video_id)
+        return jsonify(response), 200
+
+    except VideoNotFoundException as e:
+        return jsonify({"error": e.message}), 404
+    except VideoProcessingException as e:
+        return jsonify({"error": e.message}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@video_routes.route('/video/share/<token>', methods=['GET'])
+@authenticate
+def get_video_from_shared_token(token):
+    try:
+        video_service = VideoService()
+        response = video_service.get_shared_video_from_token(token)
+        return jsonify(response), 200
+
+    except VideoNotFoundException as e:
+        return jsonify({"error": e.message}), 404
+    except VideoProcessingException as e:
+        return jsonify({"error": e.message}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+

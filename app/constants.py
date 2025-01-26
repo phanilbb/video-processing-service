@@ -10,3 +10,5 @@ MAX_DURATION = 25  # 25 seconds
 
 # Upload folder (default location for temporarily saved videos)
 UPLOAD_FOLDER = 'uploads'
+
+SHARE_DURATION = 24 * 60  # in minutes
