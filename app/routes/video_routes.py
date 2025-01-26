@@ -40,15 +40,23 @@ def get(video_id):
         return jsonify({"error": str(e)}), 500
 
 
-@video_routes.route('/trim/<int:video_id>', methods=['POST'])
+@video_routes.route('/video/<int:video_id>/trim', methods=['POST'])
 def trim(video_id):
-    start = request.json.get('start')
-    end = request.json.get('end')
-    if start and end:
+    try:
+        start = request.json.get('start')
+        end = request.json.get('end')
+        if not start or not end:
+            return jsonify({"error": "Invalid parameters : 'start' and 'end' are mandatory required fields"}), 400
         video_service = VideoService()
         response = video_service.trim_video(video_id, start, end)
         return jsonify(response), 200
-    return jsonify({"message": "Invalid parameters"}), 400
+
+    except VideoNotFoundException as e:
+        return jsonify({"error": e.message}), 404
+    except VideoProcessingException as e:
+        return jsonify({"error": e.message}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @video_routes.route('/merge', methods=['POST'])

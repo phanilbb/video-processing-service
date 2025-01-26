@@ -69,3 +69,35 @@ class VideoService:
             "duration": video.duration,
             "file_path": video.file_path
         }
+
+    def trim_video(self, video_id, start, end):
+        """Trim the video to the given start and end times"""
+        # Retrieve the video record from the database
+        video = self.get_video(video_id)
+        if not video:
+            self.logger.error("video not found for ID : {}".format(video_id))
+            raise VideoNotFoundException("video not found for ID : {}".format(video_id))
+
+        # video trimming process
+        # process the video to save in DB
+        try:
+            self.logger.info("processing video for trimming : {}".format(video_id))
+            video_processor = VideoProcessor()
+            trimmed_video = video_processor.trim_video_file(video, start, end)
+        except Exception as e:
+            self.logger.error("Processing error while trimming : {}".format(str(e)))
+            raise VideoProcessingException(str(e))
+
+        # Save the trimmed video to the database
+        try:
+            # Add the video record to the database
+            self.logger.info("saving trimmed video for file : {}".format(trimmed_video.filename))
+            db.session.add(trimmed_video)
+            db.session.commit()
+        except Exception as e:
+            # Handle specific database issues (e.g., duplicate entries)
+            db.session.rollback()  # Rollback the transaction to maintain data integrity
+            self.logger.error("Database error : {}".format(str(e)))
+            raise VideoProcessingException(f"Database error: {str(e)}")
+
+        return {"message": "Video trimmed successfully", "video_id": trimmed_video.id}
