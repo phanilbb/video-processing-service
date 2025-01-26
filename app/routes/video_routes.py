@@ -1,13 +1,13 @@
 from flask import Blueprint, request, jsonify
 
-from app.exceptions.video_exceptions import VideoValidationException, VideoProcessingException
+from app.exceptions.video_exceptions import VideoValidationException, VideoProcessingException, VideoNotFoundException
 from app.service.video_service import VideoService
 from app.authentication import authenticate
 
 video_routes = Blueprint('video_routes', __name__)
 
 
-@video_routes.route('/upload', methods=['POST'])
+@video_routes.route('/video', methods=['POST'])
 @authenticate
 def upload():
     try:
@@ -16,23 +16,28 @@ def upload():
             return jsonify({"message": "Invalid file"}), 400
         video_service = VideoService()
         response = video_service.upload_video(file)
-        return jsonify(response), 200
+        return jsonify(response), 201
     except VideoValidationException as e:
-        return jsonify({"error": f"Validation error: {e.message}"}), 400
+        return jsonify({"error": e.message}), 400
     except VideoProcessingException as e:
-        return jsonify({"error": f"Processing error: {e.message}"}), 500
+        return jsonify({"error": e.message}), 500
     except Exception as e:
-        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
 
 
 @video_routes.route('/video/<int:video_id>', methods=['GET'])
 @authenticate
 def get(video_id):
-    video_service = VideoService()
-    response, result = video_service.get_video(video_id)
-    if not result:
-        return jsonify(response), 400
-    return jsonify(response), 200
+    try:
+        video_service = VideoService()
+        response = video_service.get_video(video_id)
+        return jsonify(response), 200
+    except VideoNotFoundException as e:
+        return jsonify({"error": e.message}), 404
+    except VideoProcessingException as e:
+        return jsonify({"error": e.message}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @video_routes.route('/trim/<int:video_id>', methods=['POST'])

@@ -53,12 +53,15 @@ class VideoService:
     def get_video(self, video_id):
         """Retrieve video details by ID"""
         # Retrieve the video record from the database
+        self.logger.info("fetch video for ID : {}".format(video_id))
         video = Video.query.get(video_id)
         if not video:
             # Raise exception if video not found
-            raise VideoNotFoundException(video_id)
+            self.logger.error("video not found for ID : {}".format(video_id))
+            raise VideoNotFoundException("video not found for ID : {}".format(video_id))
 
         # Prepare video data to return
+        self.logger.info("video found for ID : {}".format(video_id))
         return {
             "id": video.id,
             "filename": video.filename,
