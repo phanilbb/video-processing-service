@@ -1,4 +1,4 @@
-# Video Processing API
+# Video Processing Service
 
 This is a Flask-based API designed for video uploading, trimming, merging, and sharing functionality. It allows users to upload videos, trim them, merge multiple videos, and share them through a token-based system.
 

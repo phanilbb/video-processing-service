@@ -98,7 +98,6 @@ def get_share_link(video_id):
 
 
 @video_routes.route('/video/share/<token>', methods=['GET'])
-@authenticate
 def get_video_from_shared_token(token):
     try:
         video_service = VideoService()
