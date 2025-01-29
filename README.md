@@ -63,17 +63,24 @@ flask db upgrade
 ```
 pytest
 ```
-### 5. Run the service
+
+### 6. Run Tests with coverage (Optional)
+```
+ coverage run -m pytest
+ coverage html
+```
+
+### 7. Run the service
 ```
 flask run --port 8000
 ```
 
-### 6. Access the API By default, the API will run at
+### 8. Access the API By default, the API will run at
 ```
 http://127.0.0.1:8000
 ```
 
-### 6. Check for Bearer token in the config file
+### 9. Check for Bearer token in the config file
 
 -----------------------
 
